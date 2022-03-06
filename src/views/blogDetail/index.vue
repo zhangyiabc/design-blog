@@ -54,7 +54,11 @@
           </div>
         </div>
       </div>
-      <div class="right-content">其他内容</div>
+      <div class="right-content">
+        <div class="outline-container">
+          <Outline :list="handList" />
+        </div>
+      </div>
     </div>
   </div>
   <div v-else>
@@ -70,7 +74,12 @@
 <script>
 import { getArticleDetail } from '@/api/article'
 import moment from 'moment'
+import Outline from '@/components/Outline/index.vue'
+const html2json = require('html2json').html2json
 export default {
+  components: {
+    Outline
+  },
   filters: {
     formatTime(time) {
       return moment(time).format('yyyy年MM月DD日 h:mm')
@@ -81,7 +90,8 @@ export default {
       id: '',
       srcList: [],
       articleData: {},
-      isLoading: true
+      isLoading: true,
+      handList: []
     }
   },
   computed: {
@@ -103,9 +113,51 @@ export default {
       getArticleDetail(this.id).then((res) => {
         this.articleData = res.data
         this.isLoading = false
+        this.handList = this.getElement(
+          html2json(this.articleData.content).child
+        )
+        // console.log(html2json(this.articleData.content))
         this.srcList.push(this.articleData.cover)
         // console.log(this.articleData)
       })
+    },
+    getHText(HList) {
+      let str = ''
+      for (const item of HList) {
+        if (item.node === 'text') {
+          str += this.getTextHeaper(item)
+        } else if (item.node === 'element' && item.child.length > 0) {
+          str += this.getHText(item.child)
+        }
+      }
+      return str
+    },
+    getTextHeaper(obj) {
+      // 利用正则表达式去除标题中的空格(&nbsp;)
+      const temp = obj.text.replace(/&nbsp;/, '')
+      return temp
+    },
+    getElement(arr) {
+      // arr = arr.child
+      console.log(arr)
+      if (arr.length === 1) {
+        arr = arr[0]['child']
+      }
+      const reg = /^h[1-6]$/
+      const newArr = []
+      for (const item of arr) {
+        if (item.node === 'element' && reg.test(item.tag)) {
+          const text = this.getHText(item.child)
+          // 调用一个方法，将h标签中的child中的所有text取出来
+          newArr.push({
+            tag: item.tag.toUpperCase(),
+            id: item.attr.id,
+            text
+          })
+        }
+      }
+      console.log(newArr)
+      return newArr
     }
   }
 }
@@ -113,11 +165,13 @@ export default {
 
 <style lang="scss" scoped>
 .detail-container {
+  overflow: visible;
   min-height: calc(100vh - 50px);
   background-color: rgb(244, 245, 245);
   padding: 20px;
   display: flex;
   justify-content: space-around;
+  // overflow: scroll;
   .left-container {
     border-radius: 4px;
     width: 70%;
@@ -164,8 +218,10 @@ export default {
     }
   }
   .right-container {
+    overflow: visible;
     border-radius: 2px;
     width: 25%;
+    box-sizing: border-box;
     // background-color: tomato;
     .right-user {
       width: 100%;
@@ -213,6 +269,15 @@ export default {
         }
       }
     }
+    .right-content {
+      position: sticky;
+      bottom: 1%;
+      width: 100%;
+      height: 500px;
+      // padding: 20px;
+      z-index: 3;
+      box-sizing: border-box;
+    }
   }
 }
 .model {
@@ -234,5 +299,14 @@ export default {
       font-size: 50px;
     }
   }
+}
+div.outline-container {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 20px 0;
+  // height: 625px;
+  z-index: 2;
+  background-color: rgb(254, 254, 254);
+  border-left: 1px solid rgb(201, 200, 200);
 }
 </style>

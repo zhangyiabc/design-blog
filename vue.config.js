@@ -38,7 +38,9 @@ module.exports = {
     },
     proxy: {
       '/api': {
-        target: 'http://localhost:6789/'
+        // target: 'http://192.168.63.218:6789',
+        target: 'http://localhost:6789',
+        changeOrigin: true
       }
     }
     // before: require('./mock/mock-server.js') // 表示发送请求使用mock拦截

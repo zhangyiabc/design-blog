@@ -12,6 +12,11 @@ const whiteList = ['/login'] // no redirect whitelist
 
 router.beforeEach(async(to, from, next) => {
   // start progress bar
+  // console.log(to)
+  // console.log(from)
+  if (to.name === from.name) {
+    return
+  }
   NProgress.start()
 
   // set page title
