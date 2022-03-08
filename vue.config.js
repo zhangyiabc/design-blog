@@ -41,6 +41,18 @@ module.exports = {
         // target: 'http://192.168.63.218:6789',
         target: 'http://localhost:6789',
         changeOrigin: true
+      },
+      '/sockjs-node': {
+        // target: 'http://192.168.63.218:8021',
+        target: 'http://localhost:8021',
+        ws: false,
+        changeOrigin: true
+      },
+      '/socket.io': {
+        // target: 'http://192.168.63.218:8021',
+        target: 'http://localhost:8021',
+        ws: true,
+        changeOrigin: true
       }
     }
     // before: require('./mock/mock-server.js') // 表示发送请求使用mock拦截

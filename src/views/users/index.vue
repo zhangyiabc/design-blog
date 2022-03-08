@@ -101,7 +101,6 @@
       />
     </div>
     <el-dialog title="发送系统消息" :visible.sync="dialogFormVisible">
-
       <el-input
         v-model.trim="message"
         type="textarea"
@@ -109,10 +108,7 @@
         placeholder="请输入消息内容"
       />
       <div slot="footer" class="dialog-footer">
-        <el-button
-          type="primary"
-          @click="handleSendNotice"
-        >确 定</el-button>
+        <el-button type="primary" @click="handleSendNotice">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -196,6 +192,17 @@ export default {
   },
   mounted() {
     this.getUserList()
+    this.sockets.subscribe('adminUpdateUser', (data) => {
+      const h = this.$createElement
+      this.$notify({
+        title: '注意注意',
+        message: h(
+          'i',
+          { style: 'color: teal' },
+          `id为：${data.userId}的用户，${data.type === 'in' ? '进入' : '退出'}了系统`
+        )
+      })
+    })
   },
   methods: {
     handleSizeChange(val) {
@@ -244,13 +251,15 @@ export default {
       }
       // console.log(body)
 
-      getAllUsers(body).then((res) => {
-        // console.log(res)
-        this.userList = this.handleRequest(res.data.data)
-        this.pager.total = res.data.total
-      }).finally(() => {
-        this.isLoading = false
-      })
+      getAllUsers(body)
+        .then((res) => {
+          // console.log(res)
+          this.userList = this.handleRequest(res.data.data)
+          this.pager.total = res.data.total
+        })
+        .finally(() => {
+          this.isLoading = false
+        })
     },
     handleRequest(arr) {
       const result = arr.map((item) => {
@@ -295,7 +304,7 @@ export default {
       sendMessage({
         content: this.message,
         users: [this.nowUser.id]
-      }).then(res => {
+      }).then((res) => {
         if (res.code === '200') {
           this.dialogFormVisible = false
           this.$message({

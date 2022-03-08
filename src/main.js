@@ -4,7 +4,7 @@ import 'normalize.css/normalize.css' // A modern alternative to CSS resets
 
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
-import locale from 'element-ui/lib/locale/lang/en' // lang i18n
+// import locale from 'element-ui/lib/locale/lang/en' // lang i18n
 
 import '@/styles/index.scss' // global css
 
@@ -15,6 +15,23 @@ import router from './router'
 import '@/icons' // icon
 import '@/permission' // permission control
 
+import VueSocketIO from 'vue-socket.io'
+import SocketIO from 'socket.io-client'
+const socketOptions = {
+  autoConnect: false // 自动连接     这里为我项目需求  需要在指定情况下才连接socket
+}
+
+Vue.use(
+  new VueSocketIO({
+    // debug: true,   // debug调试，生产建议关闭
+    connection: SocketIO('http://localhost:8021', socketOptions)
+    // allowEIO3:true,
+    // extraHeaders: {
+    //   'Access-Control-Allow-Credentials':true
+    // },
+    // store,          // 如果没有使用到store可以不用写
+  })
+)
 /**
  * If you don't want to use mock-server
  * you want to use MockJs for mock api
@@ -35,9 +52,10 @@ Vue.use(ElementUI)
 
 Vue.config.productionTip = false
 
-new Vue({
-  el: '#app',
+const app = new Vue({
   router,
   store,
   render: h => h(App)
 })
+app.$socket.open()
+app.$mount('#app')
